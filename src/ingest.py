@@ -1,4 +1,8 @@
 import pandas as pd
+from utils import get_logger
+
+logger = get_logger(__name__)
+
 
 REQUIRED_COLUMNS = [
     "patient_id",
@@ -31,5 +35,8 @@ def load_data(path: str) -> pd.DataFrame:
 
 if __name__ == "__main__":
     data = load_data("data/raw/clinical_trials.csv")
+    logger.info("Ingestion successful")
+    logger.info(f"Data shape: {data.shape}")
     print("Data loaded successfully")
-    print(data.median())
+    print(f"Shape: {data.shape}")
+    print(data.select_dtypes(include='number').median())
