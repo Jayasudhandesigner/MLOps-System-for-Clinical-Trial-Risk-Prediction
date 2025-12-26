@@ -15,7 +15,8 @@
 
 # pandas: Data manipulation library for working with structured data (CSV files)
 import pandas as pd
-
+import random
+import numpy as np
 # joblib: Efficient serialization library for saving/loading ML models
 # More efficient than pickle for large numpy arrays and scikit-learn models
 import joblib
@@ -43,6 +44,10 @@ from sklearn.metrics import roc_auc_score, recall_score
 # ============================================================================
 # GLOBAL CONFIGURATION: Constants used throughout the script
 # ============================================================================
+
+def set_seed(seed: int = 42):
+    np.random.seed(seed)
+    random.seed(seed)
 
 # Path to the processed dataset (output from preprocessing pipeline)
 DATA_PATH = "data/processed/clinical_trials_processed.csv"
@@ -139,7 +144,7 @@ def main():
     # ========================================================================
     print("Loading dataset...")
     X, y = load_dataset(DATA_PATH)
-
+    set_seed()
     # ========================================================================
     # STEP 2: Split data into training (80%) and testing (20%) sets
     # ========================================================================

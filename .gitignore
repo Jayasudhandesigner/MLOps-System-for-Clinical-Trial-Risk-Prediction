@@ -5,3 +5,5 @@ __pycache__/
 mlruns/
 #data/*
 !data/.gitkeep
+models/
+training_output.txt
