@@ -166,6 +166,22 @@ All randomness controlled with `random_state=42`:
 
 ---
 
+## Data Versioning
+
+This project uses DVC to version raw and processed datasets.
+Each model version can be traced back to an exact dataset snapshot.
+
+```bash
+# Pull versioned data
+dvc pull
+
+# Data is tracked but not stored in git
+data/processed.dvc    # Metadata (in git)
+data/processed/       # Actual files (in DVC cache)
+```
+
+---
+
 ## Key Findings
 
 1. **Causal Data Quality Determines Success:** Random → 0.47, Causal → 0.64 (+36%)
