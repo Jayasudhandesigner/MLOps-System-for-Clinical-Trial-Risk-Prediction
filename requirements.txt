@@ -10,6 +10,7 @@ lightgbm>=4.0.0           # Light gradient boosting
 
 # MLOps and experiment tracking
 mlflow>=2.8.0
+dvc>=3.0.0               # Data version control
 
 # Model serialization
 joblib>=1.3.0
