@@ -1,9 +1,68 @@
-__pycache__/
-.env
+# ==============================================================================
+# ARCHITECT-GRADE .gitignore FOR MLOPS PROJECT
+# ==============================================================================
+
+# ===== Environments =====
 .venv/
-*.pkl
+venv/
+ENV/
+env/
+.python-version
+
+# ===== Python =====
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# ===== MLflow (NEVER COMMIT) =====
 mlruns/
-#data/*
-!data/.gitkeep
-models/
-training_output.txt
+mlflow.db
+mlflow.db-shm
+mlflow.db-wal
+
+# ===== Data (NEVER COMMIT RAW/PROCESSED) =====
+data/raw/*
+data/processed/*
+!data/raw/.gitkeep
+!data/processed/.gitkeep
+
+# ===== Models (NEVER COMMIT) =====
+models/*
+!models/.gitkeep
+*.pkl
+*.joblib
+*.h5
+*.pt
+*.pth
+
+# ===== Artifacts & Logs =====
+*.log
+logs/
+artifacts/
+
+# ===== IDE =====
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# ===== OS =====
+.DS_Store
+Thumbs.db
+
+# ===== Jupyter =====
+.ipynb_checkpoints/
+*.ipynb
+
+# ===== Testing =====
+.pytest_cache/
+.coverage
+htmlcov/
+
+# ===== Distribution =====
+dist/
+build/
+*.egg-info/
