@@ -5,16 +5,8 @@
 # ===== Environments =====
 .venv/
 venv/
-ENV/
-env/
-.python-version
-
-# ===== Python =====
 __pycache__/
-*.py[cod]
-*$py.class
-*.so
-.Python
+.python-version
 
 # ===== MLflow (NEVER COMMIT) =====
 mlruns/
@@ -22,20 +14,20 @@ mlflow.db
 mlflow.db-shm
 mlflow.db-wal
 
-# ===== Data (NEVER COMMIT RAW/PROCESSED) =====
+# ===== DVC cache =====
+.dvc/cache/
+.dvc/tmp/
+
+# ===== Data (tracked by DVC, not Git) =====
 data/raw/*
 data/processed/*
 !data/raw/.gitkeep
 !data/processed/.gitkeep
 
 # ===== Models (NEVER COMMIT) =====
-models/*
-!models/.gitkeep
+models/
 *.pkl
 *.joblib
-*.h5
-*.pt
-*.pth
 
 # ===== Artifacts & Logs =====
 *.log
@@ -46,7 +38,6 @@ artifacts/
 .vscode/
 .idea/
 *.swp
-*.swo
 *~
 
 # ===== OS =====
@@ -61,8 +52,3 @@ Thumbs.db
 .pytest_cache/
 .coverage
 htmlcov/
-
-# ===== Distribution =====
-dist/
-build/
-*.egg-info/
