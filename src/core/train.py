@@ -11,6 +11,8 @@ import mlflow
 import mlflow.sklearn
 import pandas as pd
 import logging
+import subprocess
+import json
 from pathlib import Path
 from sklearn.model_selection import train_test_split, cross_val_score, StratifiedKFold
 from sklearn.metrics import roc_auc_score, f1_score, precision_score, recall_score
@@ -25,6 +27,32 @@ logger = logging.getLogger(__name__)
 # MLflow configuration
 mlflow.set_tracking_uri("sqlite:///mlflow.db")
 mlflow.set_experiment("clinical_trial_dropout_causal_signal")
+
+
+def get_dvc_data_version() -> str:
+    """
+    Get DVC data version hash for reproducibility tracking.
+    
+    Links model runs to exact data snapshots via DVC.
+    Critical for data-model lineage in production MLOps.
+    
+    Returns:
+        str: DVC status JSON or 'no-dvc' if DVC not available
+    """
+    try:
+        result = subprocess.run(
+            ["dvc", "status", "--json"],
+            capture_output=True,
+            text=True,
+            timeout=5
+        )
+        if result.returncode == 0:
+            return result.stdout.strip() if result.stdout else "dvc-clean"
+        return "dvc-unavailable"
+    except Exception as e:
+        logger.warning(f"Could not get DVC version: {e}")
+        return "no-dvc"
+
 
 
 def train_model(
@@ -135,13 +163,16 @@ def train_model(
             "recall": recall_score(y_test, y_pred),
         }
         
-        # Log to MLflow
+        # Log to MLflow (including DVC data version for reproducibility)
+        dvc_version = get_dvc_data_version()
+        
         mlflow.log_params({
             "target": target,
             "feature_version": feature_version,
             "model_type": model_type,
             "scale_pos_weight": scale_pos_weight if model_type == "xgboost" else "balanced",
-            "n_features": X.shape[1]
+            "n_features": X.shape[1],
+            "data_version": dvc_version  # Links model to exact data snapshot
         })
         
         for name, value in metrics.items():
