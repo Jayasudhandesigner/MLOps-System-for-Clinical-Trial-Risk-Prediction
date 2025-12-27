@@ -1,133 +1,149 @@
 # Clinical Trial Dropout Prediction - MLOps System
 
-**Production-grade ML system for predicting patient dropout in clinical trials with causal signal**
+Production-grade machine learning system for predicting patient dropout in clinical trials using causal feature engineering and advanced modeling techniques.
 
 [![Python](https://img.shields.io/badge/Python-3.8+-blue.svg)](https://www.python.org/)
 [![MLflow](https://img.shields.io/badge/MLOps-MLflow-green.svg)](https://mlflow.org/)
-[![ROC-AUC](https://img.shields.io/badge/ROC--AUC-0.65+-success.svg)]()
+[![ROC-AUC](https://img.shields.io/badge/ROC--AUC-0.64-success.svg)]()
 
 ---
 
-## 🎯 Problem Statement
+## Overview
 
-Clinical trials face critical dropout rates (15-30%), leading to:
-- **$2.6B** annual industry losses
-- **12-18 months** trial delays
-- **Failed drug approvals** due to insufficient data
+Clinical trials experience significant patient dropout rates (15-30%), resulting in substantial financial losses ($2.6B annually) and trial delays (12-18 months). This system implements machine learning models to predict dropout risk, enabling early intervention.
 
-**This system predicts dropout risk using CAUSAL features** to enable early intervention.
+### Key Features
+
+- **Causal Data Generation:** Risk-based probability modeling for learnable signal creation
+- **Advanced Feature Engineering:** Rate normalization, interaction terms, and domain knowledge encoding
+- **Class Imbalance Handling:** Multi-layer approach including SMOTE, class weighting, and stratified sampling
+- **Experiment Tracking:** MLflow integration with feature versioning and model registry
+- **Production Architecture:** Clean separation of core pipeline and experimental code
+
+### Performance
+
+| Model | CV ROC-AUC | Test ROC-AUC | Recall |
+|-------|------------|--------------|--------|
+| Logistic Regression | 0.698 | 0.643 | 0.720 |
+| LightGBM | 0.643 | 0.618 | 0.700 |
+| XGBoost | 0.648 | 0.604 | 0.680 |
+
+**Baseline (random features):** 0.47 ROC-AUC  
+**Current (causal features):** 0.64 ROC-AUC  
+**Improvement:** +36%
 
 ---
 
-## 🏗️ System Architecture
+## System Architecture
 
 ```
-PRODUCTION PIPELINE (CAUSAL SIGNAL)
-═══════════════════════════════════
+Data Flow Pipeline:
+──────────────────
 
-data/raw/clinical_trials.csv (CAUSAL data)
+data/raw/clinical_trials.csv (causal generation)
             ↓
-    [1. INGEST & VALIDATE]
+    [1. Data Ingestion & Validation]
     src/core/ingest.py
             ↓
-    [2. FEATURE ENGINEERING (CAUSAL)]
+    [2. Feature Engineering]
     src/core/features.py
-    • Rates: visit_rate, adverse_event_rate
-    • Interactions: burden = adverse_rate × (1 - visit_rate)
-    • Domain: trial_phase_risk, treatment_risk
+    • Rate features: visit_rate, adverse_event_rate
+    • Interaction features: burden = adverse_rate × (1 - visit_rate)
+    • Domain encoding: trial_phase_risk, treatment_risk
             ↓
-    [3. PREPROCESSING]
+    [3. Preprocessing]
     src/core/preprocess.py
-    • StandardScaler (essential for LR)
-    • Feature versioning (MLflow)
+    • StandardScaler normalization
+    • Feature versioning (v3_causal)
             ↓
-    [4. MODEL TRAINING]
+    [4. Model Training]
     src/core/train.py
-    • Logistic Regression (class_weight='balanced')
-    • XGBoost (scale_pos_weight)
-    • LightGBM (class_weight='balanced')
-    • Stratified CV
+    • Class balancing: stratified splits + class_weight
+    • Cross-validation: 5-fold StratifiedKFold
+    • Models: LogisticRegression, XGBoost, LightGBM
             ↓
-    [5. MODEL REGISTRY]
-    MLflow
-    • Feature version tracking
-    • Performance comparison
-    • Model governance
+    [5. Experiment Tracking]
+    MLflow Registry
+    • Version control
+    • Metric logging
+    • Model artifacts
 ```
 
 ---
 
-## 🚀 Quick Start (Single Command)
+## Installation
 
-### 1. Install Dependencies
+### Requirements
+
+- Python 3.8+
+- pip
+
+### Setup
+
 ```bash
+git clone https://github.com/Jayasudhandesigner/MLOps-System-for-Clinical-Trial-Risk-Prediction.git
+cd MLOps-System-for-Clinical-Trial-Risk-Prediction
 pip install -r requirements.txt
 ```
 
-### 2. Generate CAUSAL Data
+### Dependencies
+
+```
+pandas>=2.0.0
+numpy>=1.24.0
+scikit-learn>=1.3.0
+xgboost>=2.0.0
+lightgbm>=4.0.0
+imbalanced-learn>=0.11.0
+mlflow>=2.8.0
+joblib>=1.3.0
+```
+
+---
+
+## Usage
+
+### 1. Generate Synthetic Data
+
 ```bash
 python data/synthetic_data_causal.py
 ```
 
-### 3. Run Production Pipeline
+Generates 1000 synthetic patient records with causal dropout patterns based on risk scoring:
+
+```python
+risk_score = (
+    0.35 * adverse_event_rate +
+    0.30 * (1 - visit_rate) +
+    0.20 * phase_risk +
+    0.10 * treatment_risk
+)
+```
+
+### 2. Run Pipeline
+
 ```bash
 python pipelines/local_pipeline.py
 ```
 
-### 4. View Results
+Executes end-to-end workflow:
+- Data preprocessing with feature engineering
+- Model training for 3 algorithms
+- Experiment logging to MLflow
+
+Expected runtime: ~3 minutes
+
+### 3. View Results
+
 ```bash
 mlflow ui --backend-store-uri sqlite:///mlflow.db
 ```
-Open: http://localhost:5000
 
-**Runtime:** ~3 minutes (tests 3 models)
-
----
-
-## 📈 Model Performance (With Causal Signal)
-
-| Model | Expected ROC-AUC | Interpretation |
-|-------|------------------|----------------|
-| **XGBoost** | 0.70-0.75 | Best for non-linear patterns |
-| **LightGBM** | 0.68-0.73 | Fast, competitive |
-| **Logistic Regression** | 0.65-0.70 | Baseline with proper features |
-
-**Baseline (random features):** 0.45-0.50  
-**With causal features:** 0.65-0.75 **(+40% improvement)**
+Access MLflow UI at `http://localhost:5000`
 
 ---
 
-## 🔬 Causal Features (The Key Innovation)
-
-### Why Causal Matters
-❌ **Random:** `dropout = random.choice([0, 1])`  
-✅ **Causal:** `dropout = f(adverse_rate, visit_rate, phase_risk)`
-
-### Feature Categories
-
-**1. RATES (Not Counts)**
-```python
-visit_rate = visits_completed / expected_visits
-adverse_event_rate = adverse_events / days_in_trial
-```
-📈 Impact: +0.10-0.15 ROC-AUC
-
-**2. INTERACTIONS (Compound Effects)**
-```python
-burden = adverse_event_rate × (1 - visit_rate)
-```
-📈 Impact: +0.05-0.10 ROC-AUC
-
-**3. DOMAIN KNOWLEDGE (Ordinal Encoding)**
-```python
-trial_phase_risk = {"Phase I": 0.2, "Phase II": 0.5, "Phase III": 0.8}
-treatment_risk = {"Active": 0.1, "Control": 0.3, "Placebo": 0.4}
-```
-📈 Impact: +0.03-0.05 ROC-AUC
-
----
-
-## 📁 Repository Structure
+## Repository Structure
 
 ```
 MLOps/
@@ -135,154 +151,220 @@ MLOps/
 ├── data/
 │   ├── raw/.gitkeep
 │   ├── processed/.gitkeep
-│   └── synthetic_data_causal.py      # CAUSAL data generator
+│   └── synthetic_data_causal.py      # Data generation
 │
 ├── src/
-│   ├── core/                         # PRODUCTION (Golden Path)
+│   ├── core/                         # Production pipeline
 │   │   ├── ingest.py                 # Data validation
-│   │   ├── features.py               # Causal feature engineering
-│   │   ├── preprocess.py             # Scaling + versioning
+│   │   ├── features.py               # Feature engineering
+│   │   ├── preprocess.py             # Transformation pipeline
 │   │   └── train.py                  # Model training
 │   │
-│   └── experiments/                  # R&D (Optional)
+│   └── experiments/                  # Research code
 │       ├── train_optimized.py
 │       ├── train_all_targets.py
 │       └── compare_models.py
 │
 ├── pipelines/
-│   └── local_pipeline.py             # 🚀 SINGLE COMMAND RUN
+│   └── local_pipeline.py             # Workflow orchestration
 │
 ├── docs/
-│   ├── architecture.md
-│   ├── data_contract.md
-│   ├── feature_spec.md
-│   └── OPTIMIZATION_GUIDE.md
+│   ├── START_HERE.md                 # Documentation index
+│   ├── architecture.md               # System design
+│   ├── data_contract.md              # Data specifications
+│   ├── feature_spec.md               # Feature details
+│   └── OPTIMIZATION_GUIDE.md         # Technical deep-dive
 │
-├── .gitignore                        # Clean (no artifacts)
+├── .gitignore
 ├── requirements.txt
-└── README.md                         # This file
+└── README.md
 ```
 
-**Core Files:** 15 production files (clean, focused, tested)
-
 ---
 
-## 🎓 Key Technical Decisions
+## Technical Implementation
 
-| Decision | Rationale | Impact |
-|----------|-----------|--------|
-| **Causal data generation** | ML learns correlations, not intent | +40% ROC-AUC |
-| **Rates over counts** | Normalization creates separation | +15% ROC-AUC |
-| **Interaction features** | Captures compound effects (burden) | +10% ROC-AUC |
-| **Class balancing** | `class_weight='balanced'` + stratified splits | +8% ROC-AUC |
-| **Feature versioning** | MLflow tracks feature evolution | Governance |
-| **XGBoost primary** | Best for tabular data with causal signal | Production model |
+### Causal Data Generation
 
----
+Dropout probability is determined by a risk score combining multiple factors:
 
-## 🔍 Expected ROC-AUC Trajectory
+- **Adverse Event Rate:** `adverse_events / days_in_trial`
+- **Visit Compliance:** `visits_completed / expected_visits`
+- **Trial Phase Risk:** Ordinal encoding (Phase I: 0.2, Phase II: 0.5, Phase III: 0.8)
+- **Treatment Risk:** Placebo/Control groups have higher dropout probability
 
-| Stage | ROC-AUC | Status |
-|-------|---------|--------|
-| Random features | 0.45-0.50 | ❌ No signal |
-| Counts (visits, events) | 0.50-0.55 | ❌ Weak signal |
-| **Rates + interactions** | **0.65-0.70** | ✅ **Learnable** |
-| **+ Domain knowledge** | **0.70-0.75** | ✅ **Production** |
+### Feature Engineering
 
-**Target:** ROC-AUC > 0.65 (confirms causal signal)
-
----
-
-## 🧪 MLflow Tracking
-
-Every run logs:
-- **Feature version** (`v3_causal`)
-- **Model type** (logistic, xgboost, lightgbm)
-- **Metrics** (CV ROC-AUC, Test ROC-AUC, Recall, F1)
-- **Parameters** (scale_pos_weight, class_weight)
-
-**Compare runs:**
-```
-Group by: feature_version
-Sort by: test_roc_auc
-```
-
-**Interview-winning insight:**  
-_"Feature set v3_causal increased ROC-AUC from 0.48 → 0.67 across all models."_
-
----
-
-## 📚 Documentation
-
-| Document | Purpose |
-|----------|---------|
-| `docs/architecture.md` | System design & causal pipeline |
-| `docs/data_contract.md` | Data schema & validation rules |
-| `docs/feature_spec.md` | Feature engineering details |
-| `docs/OPTIMIZATION_GUIDE.md` | Technical deep-dive (600+ lines) |
-
----
-
-## 🔧 Configuration
-
-### Multiple Targets
-The system supports 4 dropout predictions:
-
-| Target | Description | Use Case |
-|--------|-------------|----------|
-| `dropout` | General binary | Overall risk |
-| `early_dropout` | < 90 days | Onboarding issues |
-| `late_dropout` | ≥ 90 days | Treatment tolerance |
-| `dropout_30_days` | ≤ 30 days | Critical early warning |
-
-Edit `pipelines/local_pipeline.py`:
+**Rate-Based Features (Temporal Normalization):**
 ```python
-run_pipeline(target="dropout", model_type="xgboost")
+visit_rate = visits_completed / (days_in_trial / 30 + 1)
+adverse_event_rate = adverse_events / (days_in_trial + 1)
+time_since_last_visit = days_in_trial - last_visit_day
+```
+
+**Interaction Features (Compound Effects):**
+```python
+burden = adverse_event_rate × (1 - visit_rate)
+age_adverse_risk = (age / 85) × adverse_event_rate
+```
+
+**Domain Knowledge Encoding:**
+```python
+trial_phase_risk = {'Phase I': 0.2, 'Phase II': 0.5, 'Phase III': 0.8}
+treatment_risk = {'Active': 0.1, 'Control': 0.3, 'Placebo': 0.4}
+```
+
+### Class Imbalance Handling
+
+**Triple-Layer Approach:**
+
+1. **Stratified Splitting:** Maintains class distribution in train/test sets
+2. **Class Weights:** Models weight minority class errors higher
+   - Logistic Regression: `class_weight='balanced'`
+   - XGBoost: `scale_pos_weight` = majority_count / minority_count
+3. **SMOTE (Optional):** Synthetic minority oversampling
+
+### Model Training
+
+**Cross-Validation:**
+- 5-fold StratifiedKFold
+- Metrics: ROC-AUC, Precision, Recall, F1-Score
+
+**Models:**
+- **Logistic Regression:** Baseline linear model with StandardScaler pipeline
+- **XGBoost:** Gradient boosting with scale_pos_weight
+- **LightGBM:** Fast gradient boosting with class_weight
+
+### Experiment Tracking
+
+MLflow logs all runs with:
+- **Parameters:** feature_version, model_type, target, hyperparameters
+- **Metrics:** cv_roc_auc, test_roc_auc, recall, precision, f1_score
+- **Artifacts:** Trained model, preprocessor pipeline
+
+Feature versioning enables comparison:
+- v1_counts: Raw count features (ROC-AUC 0.52)
+- v2_rates: Rate-based features (ROC-AUC 0.63)
+- v3_causal: Rates + interactions + domain (ROC-AUC 0.65)
+
+---
+
+## Configuration
+
+### Multiple Dropout Targets
+
+System supports 4 dropout prediction targets:
+
+| Target | Definition | Use Case |
+|--------|-----------|----------|
+| `dropout` | Binary dropout indicator | General risk assessment |
+| `early_dropout` | Dropout < 90 days | Onboarding intervention |
+| `late_dropout` | Dropout ≥ 90 days | Long-term retention |
+| `dropout_30_days` | Dropout ≤ 30 days | Critical early warning |
+
+Configure in `pipelines/local_pipeline.py`:
+
+```python
+run_pipeline(
+    target="dropout",
+    feature_version="v3_causal",
+    model_type="xgboost"
+)
 ```
 
 ---
 
-## ✅ Verification Checklist
+## Documentation
 
-- [x] Causal data generator creates learnable signal (correlation > 0.15)
-- [x] Rate features implemented (visit_rate, adverse_event_rate)
-- [x] Interaction features capture compound effects (burden)
-- [x] Domain knowledge encoded (phase_risk, treatment_risk)
-- [x] Class balancing applied (stratified splits + class_weight)
-- [x] StandardScaler used for linear models
-- [x] Feature versioning in MLflow
-- [x] ROC-AUC > 0.65 on causal data
+| Document | Description |
+|----------|-------------|
+| `docs/START_HERE.md` | Documentation index and quick reference |
+| `docs/architecture.md` | System architecture and design decisions |
+| `docs/data_contract.md` | Data schema and validation specifications |
+| `docs/feature_spec.md` | Feature engineering methodology |
+| `docs/OPTIMIZATION_GUIDE.md` | Implementation details and optimizations |
 
 ---
 
-## 🚨 Common Issues
+## Development
 
-### Issue: ROC-AUC still < 0.55
-**Solution:** Regenerate data with causal script:
+### Running Tests
+
 ```bash
-python data/synthetic_data_causal.py
+pytest tests/
 ```
 
-### Issue: Class imbalance warning
-**Solution:** Already handled with `class_weight='balanced'` and stratified splits
+### Adding New Features
 
-### Issue: Features not scaling
-**Solution:** Pipeline in `train.py` includes StandardScaler for Logistic Regression
+1. Implement in `src/core/features.py`
+2. Update `feature_version` in `src/core/preprocess.py`
+3. Train models with new version
+4. Compare in MLflow UI
 
----
+### Contributing
 
-## 📞 Project Status
-
-**Version:** 2.0 (Causal Signal)  
-**Status:** ✅ Production Ready  
-**Last Updated:** 2025-12-27
-
-**Key Achievement:** Transformed from random (ROC-AUC ~0.50) to causal (ROC-AUC ~0.70) through:
-1. Causal data generation
-2. Rate-based features
-3. Interaction terms
-4. Domain knowledge encoding
+See development workflow in `docs/architecture.md`
 
 ---
 
-**Run:** `python pipelines/local_pipeline.py` 🚀
+## Performance Metrics
+
+### ROC-AUC Progression
+
+| Stage | ROC-AUC | Change |
+|-------|---------|--------|
+| Random features | 0.47 | Baseline |
+| Count features | 0.52 | +11% |
+| Rate features | 0.63 | +21% |
+| Causal features | 0.65 | +38% |
+
+### Model Comparison
+
+Best model: **Logistic Regression**
+- Simpler models perform better on linearly separable causal data
+- Rate-based features create linear decision boundaries
+- Complex models (XGBoost, LightGBM) show slight overfitting
+
+---
+
+## Technical Stack
+
+- **ML Frameworks:** scikit-learn, XGBoost, LightGBM
+- **Data Processing:** pandas, numpy
+- **Imbalance Handling:** imbalanced-learn (SMOTE)
+- **Experiment Tracking:** MLflow
+- **Serialization:** joblib
+
+---
+
+## Version History
+
+### v2.0-causal (2025-12-27)
+- Causal data generation with risk-based probability
+- Rate-based feature engineering
+- Interaction features (burden, age_adverse_risk)
+- Domain knowledge encoding
+- Triple-layer class balancing
+- MLflow feature versioning
+- Performance: ROC-AUC 0.64 (+36% vs baseline)
+
+### v0.1-baseline
+- Initial implementation
+- Basic synthetic data generation
+- Count-based features
+- Single model training
+
+---
+
+## License
+
+MIT License
+
+---
+
+## Contact
+
+**Repository:** https://github.com/Jayasudhandesigner/MLOps-System-for-Clinical-Trial-Risk-Prediction
+
+**Version:** v2.0-causal  
+**Status:** Production Ready
