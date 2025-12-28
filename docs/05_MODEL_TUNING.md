@@ -2,6 +2,10 @@
 
 **Adjusting Risk Screening Sensitivity for Clinical Trial Retention**
 
+> **Note:** Experiments conducted in `research` branch.  
+> See: `research` → `src/experiments/threshold_tuning.py`  
+> This document contains validated findings only.
+
 ---
 
 ## Executive Summary
