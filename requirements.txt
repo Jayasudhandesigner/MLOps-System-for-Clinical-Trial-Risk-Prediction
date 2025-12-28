@@ -15,5 +15,10 @@ dvc>=3.0.0               # Data version control
 # Model serialization
 joblib>=1.3.0
 
+# API deployment (production serving)
+fastapi>=0.109.0          # Modern web framework
+uvicorn>=0.27.0           # ASGI server
+pydantic>=2.5.0           # Data validation
+
 # Development and testing
 pytest>=7.4.0
