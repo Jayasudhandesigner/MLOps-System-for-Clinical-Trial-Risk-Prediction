@@ -59,18 +59,20 @@ curl -X POST http://localhost:8000/predict \
 
 ## 🎯 Key Results
 
-### Model Performance (LightGBM with Threshold 0.20)
+### Model Performance (LightGBM with Threshold 0.35)
 
 | Metric | Value | Clinical Impact |
 |--------|-------|-----------------|
-| **Recall** | **82.86%** | ✅ Catches 83% of all dropouts |
-| **Precision** | 54.72% | 55% of flagged patients drop out |
-| **F1 Score** | 0.6615 | Optimized balance |
-| **ROI** | **47% cost reduction** | $258,500 savings per 1000 patients |
+| **Recall** | **72.38%** | ✅ Catches 72% of all dropouts |
+| **Precision** | 57.58% | 58% of flagged patients drop out |
+| **F1 Score** | 0.6414 | Balanced performance |
+| **ROI** | **Optimized cost-benefit** | Reduced false alarms |
 
-**Improvement Over Baseline:**
-- Recall: 58.1% → 82.86% (**+42% relative improvement**)
-- Dropouts Caught: 141 → 201 (**+60 more patients**)
+**Balanced Threshold:**
+- Threshold: **0.35** (balanced between recall and precision)
+- Previous aggressive: 0.20 (82.86% recall, many false alarms)
+- More sustainable for production use
+
 
 ---
 
@@ -88,7 +90,7 @@ curl -X POST http://localhost:8000/predict \
 ┌─────────────────────────────────────────────────────────────┐
 │                    LightGBM Model (v3_causal)                │
 │  • Trained on causal features                                │
-│  • Decision threshold: 0.20 (cost-optimized)                 │
+│  • Decision threshold: 0.35 (balanced)                        │
 │  • Stored in MLflow Model Registry                           │
 └─────────────────────────────────────────────────────────────┘
                               ▼
@@ -184,16 +186,17 @@ Compared three models on causal features:
 
 **Problem:** Default threshold (0.50) misses 42% of dropouts.
 
-**Solution:** Lower threshold to 0.20 for early intervention.
+**Solution:** Balanced threshold of 0.35 for sustainable production use.
 
 **Impact:**
 
 | Threshold | Recall | Dropouts Caught | False Alarms |
-|-----------|--------|-----------------|--------------|
+|-----------|--------|-----------------|------------|
 | 0.50 (default) | 58.1% | 141 / 243 | 83 |
-| **0.20 (optimized)** | **82.86%** | **201 / 243** ✅ | 166 |
+| **0.35 (balanced)** | **72.38%** | **176 / 243** ✅ | 130 |
+| 0.20 (aggressive) | 82.86% | 201 / 243 | 166 |
 
-**Trade-off:** Accept +83 false alarms to catch +60 real dropouts.
+**Trade-off:** Balanced approach - catch most dropouts without excessive false alarms.
 
 **Business Case:** False alarm ($500) << Dropout cost ($5000)  
 **Savings:** $258,500 per 1000 patients
@@ -239,7 +242,7 @@ Create `.env` file (optional):
 ```bash
 MODEL_VERSION=v3_causal
 MODEL_STAGE=production
-DECISION_THRESHOLD=0.20
+DECISION_THRESHOLD=0.35
 API_PORT=8000
 LOG_LEVEL=INFO
 ```
@@ -361,7 +364,7 @@ Matches practices at:
 ## 📈 Key Learnings
 
 1. **Model Selection:** LightGBM > XGBoost > Logistic Regression for recall-focused tasks
-2. **Threshold Tuning:** Lowering threshold from 0.50 → 0.20 improved recall 42%
+2. **Threshold Tuning:** Balanced threshold of 0.35 provides good recall (72%) with acceptable precision
 3. **Feature Engineering:** Rate-based features > raw counts for causal data
 4. **Branch Strategy:** Strict production/research separation keeps deployment clean
 5. **Configuration:** Zero hardcoding enables easy A/B testing and deployment
