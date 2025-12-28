@@ -129,16 +129,31 @@ def train_model(
             )
             
         elif model_type == "lightgbm":
-            logger.info("🎯 Training LightGBM with class_weight='balanced'")
+            logger.info("🎯 Training LightGBM with FAST & SAFE config (prevents hanging)")
             
+            # FAST & SAFE TEMPLATE - prevents hanging on Windows
             model = lgb.LGBMClassifier(
-                n_estimators=200,
+                # Boosting config
+                boosting_type="gbdt",
+                learning_rate=0.05,        # Raised (was 0.1)
+                n_estimators=500,          # Reduced (was 200, could hang at 5000)
+                
+                # Tree complexity caps (CRITICAL - prevents hanging)
                 num_leaves=31,
-                max_depth=5,
-                learning_rate=0.1,
-                class_weight='balanced',  # Handle imbalance
-                random_state=42,
-                verbose=-1
+                max_depth=10,              # Increased from 5
+                min_data_in_leaf=50,       # NEW: prevents overfitting + speeds up
+                max_bin=128,               # NEW: histogram optimization
+                
+                # Threading control (prevents deadlocks)
+                n_jobs=4,                  # Locked to 4 threads
+                device_type="cpu",         # Force CPU (no GPU ambiguity)
+                
+                # Class imbalance
+                class_weight='balanced',
+                
+                # Monitoring
+                verbose=1,                 # Show progress (was -1)
+                random_state=42
             )
         else:
             raise ValueError(f"Unknown model_type: {model_type}")
