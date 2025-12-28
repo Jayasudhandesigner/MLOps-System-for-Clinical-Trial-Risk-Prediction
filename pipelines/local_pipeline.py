@@ -73,7 +73,7 @@ def run_pipeline(
         step1_start = time.time()
         
         preprocess_data(
-            input_path="data/raw/clinical_trials.csv",
+            input_path="data/raw/clinical_trials_realistic_v5.csv",
             output_path=f"data/processed/clinical_trials_{target}.csv",
             target=target,
             feature_version=feature_version
