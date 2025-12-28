@@ -19,8 +19,8 @@ import numpy as np
 import time
 import logging
 
-from prediction_logger import init_logger, get_logger
-import config  # Import configuration
+from api.prediction_logger import init_logger, get_logger
+from api import config  # Import configuration
 
 # Setup logging
 logging.basicConfig(
