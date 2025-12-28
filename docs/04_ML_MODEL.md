@@ -243,24 +243,94 @@ cv_scores = cross_val_score(
 
 ## Model Selection Rationale
 
-### Why Logistic Regression Wins?
+### Production Model: LightGBM 🏆
 
-**Observation:** Simplest model achieves best performance
+**Decision Criterion:** **Maximize Dropout Detection (Recall)**
 
-**Explanation:**
-1. **Causal features create linear separability**
-   - burden = adverse_rate × (1 - visit_rate) is linear combination
-   - Domain encoding (phase_risk, treatment_risk) creates ordinal scale
-   
-2. **XGBoost/LightGBM optimized for non-linear patterns**
-   - Our features already capture non-linearity
-   - Tree-based models add complexity without benefit
-   
-3. **Overfitting on small dataset (1000 samples)**
-   - Complex models learn noise
-   - Simple models generalize better
+**Clinical Context:** 
+In clinical trial risk prediction, missing a dropout case (false negative) has severe consequences:
+- Wasted resources on participants likely to drop out
+- Delayed trial completion timelines
+- Budget overruns and resource misallocation
+- Inability to intervene early with retention strategies
 
-**Lesson:** Feature engineering > Model complexity
+**Therefore:** Catching more dropout cases is the priority, making **Recall** the primary optimization metric.
+
+---
+
+### Performance Comparison (MLflow Experiment: `clinical_trial_dropout_causal_signal`)
+
+**All models trained on v3_causal features:**
+
+| Model | CV ROC-AUC | Test ROC-AUC | **Recall** | Precision | F1 Score | Training Time |
+|-------|------------|--------------|------------|-----------|----------|---------------|
+| **LightGBM** | 0.6426 | 0.6182 | **0.5810** ✅ | 0.6289 | **0.6040** ✅ | 10.3s |
+| XGBoost | 0.6476 | 0.6037 | 0.5524 | 0.6042 | 0.5771 | 10.8s |
+| Logistic Regression | **0.6984** ✅ | **0.6429** ✅ | 0.4476 | **0.6812** ✅ | 0.5402 | 16.6s |
+
+---
+
+### Why LightGBM is the Best Choice
+
+**1. Highest Recall: 0.5810 (58.1%)**
+- Catches **13% more dropout cases** than Logistic Regression (44.8%)
+- Catches **5% more dropout cases** than XGBoost (55.2%)
+- Clinical Impact: On 1000 patients with 243 dropouts, LightGBM identifies **141 at-risk patients** vs only **109 for Logistic Regression**
+
+**2. Best F1 Score: 0.6040**
+- Achieves the optimal balance between precision and recall
+- Indicates robust overall performance without sacrificing precision severely
+
+**3. Reasonable Precision: 0.6289**
+- 62.9% of flagged patients actually drop out
+- Acceptable false alarm rate for intervention programs
+- Trade-off: Worth the extra false positives to catch 32 more real dropout cases
+
+**4. Good Generalization: CV ROC-AUC 0.6426 ± 0.0166**
+- Low standard deviation indicates stable performance across folds
+- No significant overfitting (CV and Test AUC are close)
+
+**5. Fast Training: 10.3 seconds**
+- Faster than Logistic Regression (16.6s)
+- Comparable to XGBoost (10.8s)
+- Enables rapid experimentation and retraining
+
+---
+
+### Why Not Logistic Regression?
+
+**Despite highest ROC-AUC (0.6429), Logistic Regression fails the use case:**
+
+- **Poor Recall: 0.4476** - Misses 55% of dropout cases
+- **High Precision (0.6812) is not valuable** if we're missing half the at-risk patients
+- **Clinical Risk:** Too many patients drop out without warning
+- **Business Impact:** Cannot deploy effective retention interventions
+
+**Verdict:** ROC-AUC optimizes for ranking, but we need **detection**, not ranking.
+
+---
+
+### Why Not XGBoost?
+
+- **Lower Recall than LightGBM:** 0.5524 vs 0.5810
+- **Lower F1 Score:** 0.5771 vs 0.6040
+- **No significant advantage** in any metric
+- **Slightly slower:** 10.8s vs 10.3s
+
+**Verdict:** LightGBM dominates XGBoost on all relevant metrics.
+
+---
+
+### Model Selection Philosophy
+
+**Traditional ML:** Choose highest ROC-AUC  
+**MLOps Best Practice:** Choose model that **optimizes business objective**
+
+**Our Business Objective:** Minimize missed dropout cases to enable timely interventions.
+
+**Result:** LightGBM's recall-focused performance aligns perfectly with clinical priorities.
+
+**Lesson:** Model selection must be driven by **domain requirements**, not just statistical metrics.
 
 ---
 
