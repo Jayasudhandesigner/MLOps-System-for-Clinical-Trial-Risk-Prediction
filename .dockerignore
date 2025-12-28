@@ -1,0 +1,82 @@
+# =============================================================================
+# .dockerignore - Exclude unnecessary files from Docker build context
+# =============================================================================
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+.venv/
+venv/
+env/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*~
+
+# Git
+.git/
+.gitignore
+.gitattributes
+
+# GitHub
+.github/
+
+# DVC (we copy data artifacts explicitly)
+.dvc/cache/
+.dvc/tmp/
+*.dvc
+
+# MLflow runs (we only need mlflow.db)
+mlruns/
+
+# Data (we only copy preprocessor)
+data/raw/*
+data/synthetic_data_causal.py
+
+# Documentation
+docs/
+*.md
+!README.md
+
+# Tests
+tests/
+pytest.ini
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Research branch files
+src/experiments/
+scripts/
+
+# Notebooks
+*.ipynb
+.ipynb_checkpoints/
+
+# Logs (created at runtime)
+logs/
+*.log
+
+# Models (loaded from MLflow)
+models/
+*.pkl
+!data/processed/preprocessor_dropout_v3_causal.pkl
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Build artifacts
+*.egg-info/
+dist/
+build/
+
+# Environment
+.env
+*.env
+!.env.example
