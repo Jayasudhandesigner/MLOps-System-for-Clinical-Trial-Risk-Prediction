@@ -1,10 +1,14 @@
 """
 src/core/train.py
 ==================
-PRODUCTION TRAINING MODULE (CAUSAL SIGNAL VERSION)
+MODEL COMPARISON & EVALUATION MODULE
 
-Golden Path: Step 4
-Trains production model with ALL optimizations for learnable signal.
+Purpose:
+- Compare multiple ML algorithms (LightGBM, XGBoost, Logistic Regression)
+- Log experiments to MLflow for model selection
+- DO NOT use for production deployment (use MLflow registry instead)
+
+Golden Path: Step 4 - Model training and comparison
 """
 
 import mlflow
