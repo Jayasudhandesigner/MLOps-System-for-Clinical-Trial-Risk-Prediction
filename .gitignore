@@ -52,3 +52,14 @@ Thumbs.db
 .pytest_cache/
 .coverage
 htmlcov/
+
+# ===== Personal / Progress Docs (Interview Prep - Hide These) =====
+# Keep professional knowledge-centric docs, hide personal progress tracking
+docs/01_PROGRESS.md
+docs/05_OPTIMIZATION_RESULTS.md
+PORTFOLIO_SUMMARY.md
+TODO.md
+NOTES.md
+**/personal/
+**/*_DRAFT.md
+**/*_WIP.md
