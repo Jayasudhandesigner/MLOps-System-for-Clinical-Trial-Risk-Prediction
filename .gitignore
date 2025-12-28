@@ -63,3 +63,8 @@ NOTES.md
 **/personal/
 **/*_DRAFT.md
 **/*_WIP.md
+
+# ===== Environment Variables (Never Commit Secrets) =====
+.env
+*.env
+!.env.example
