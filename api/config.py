@@ -16,7 +16,8 @@ from typing import Dict
 
 MODEL_VERSION = os.getenv("MODEL_VERSION", "v3_causal")
 MODEL_STAGE = os.getenv("MODEL_STAGE", "production")
-DECISION_THRESHOLD = float(os.getenv("DECISION_THRESHOLD", "0.35"))  # Balanced threshold
+DECISION_THRESHOLD = float(os.getenv("DECISION_THRESHOLD", "0.30"))  # Balanced threshold V5
+
 
 
 # ============================================================================
