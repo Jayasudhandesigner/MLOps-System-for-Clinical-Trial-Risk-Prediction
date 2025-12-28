@@ -190,7 +190,7 @@ if __name__ == "__main__":
     logger.info("="*80)
     
     result = train_and_tune_threshold(
-        data_path="data/processed/clinical_trials_processed.csv",
+        data_path="data/processed/clinical_trials_dropout.csv",
         target="dropout",
         feature_version="v3_causal"
     )
