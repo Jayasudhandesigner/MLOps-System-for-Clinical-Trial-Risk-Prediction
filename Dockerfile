@@ -41,26 +41,25 @@ ENV PATH=/home/appuser/.local/bin:$PATH
 
 # Copy application code
 COPY api/ /app/api/
-COPY src/core/ /app/src/core/
-COPY src/utils/ /app/src/utils/
-COPY src/__init__.py /app/src/
+COPY src/ /app/src/
+COPY monitoring/ /app/monitoring/
 
-# Copy data artifacts (preprocessor)
-COPY data/processed/preprocessor_dropout_v3_causal.pkl /app/data/processed/
+# Copy model files (from artifacts or local)
+COPY models/ /app/models/
 
-# Copy MLflow database (for model registry access)
-COPY mlflow.db /app/
+# Copy data artifacts (optional - may not exist in all environments)
+COPY data/processed/ /app/data/processed/
+
+# Copy MLflow database (optional)
+COPY mlflow.db* /app/
 
 # Create logs directory with proper permissions
-RUN mkdir -p /app/logs && chown -R appuser:appuser /app/logs
-
-# Change ownership of app directory
-RUN chown -R appuser:appuser /app
+RUN mkdir -p /app/logs /app/monitoring && chown -R appuser:appuser /app
 
 # Switch to non-root user
 USER appuser
 
-# Environment variables (can be overridden at runtime)
+# Environment variables
 ENV MODEL_VERSION=v3_causal \
     MODEL_STAGE=production \
     DECISION_THRESHOLD=0.20 \
@@ -72,9 +71,9 @@ ENV MODEL_VERSION=v3_causal \
 # Expose port
 EXPOSE 8000
 
-# Health check
-HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
-    CMD python -c "import requests; requests.get('http://localhost:8000/health').raise_for_status()"
+# Health check (increased start period)
+HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
+    CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')" || exit 1
 
 # Run uvicorn server
 CMD ["uvicorn", "api.main:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "1"]

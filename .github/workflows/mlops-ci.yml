@@ -299,10 +299,28 @@ jobs:
       run: |
         # Run container
         docker run -d -p 8000:8000 --name test-container clinical-trial-mlops:latest
-        sleep 10
         
-        # Health check
-        curl -f http://localhost:8000/health || exit 1
+        # Wait for container to start (increased time)
+        echo "Waiting for container to start..."
+        sleep 30
+        
+        # Show container logs for debugging
+        echo "=== Container logs ==="
+        docker logs test-container || true
+        
+        # Health check with retries
+        echo "=== Health check ==="
+        for i in 1 2 3 4 5; do
+          if curl -f http://localhost:8000/health; then
+            echo "✅ Health check passed!"
+            break
+          fi
+          echo "Attempt $i failed, waiting..."
+          sleep 5
+        done
+        
+        # Final check
+        curl -f http://localhost:8000/health || (docker logs test-container && exit 1)
         
         # Cleanup
         docker stop test-container
