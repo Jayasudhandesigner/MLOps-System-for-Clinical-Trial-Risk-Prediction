@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: dropout-config
+data:
+  MODEL_NAME: "ClinicalTrialDropoutModel"
+  MODEL_STAGE: "Production"
+  DECISION_THRESHOLD: "0.30"

@@ -290,7 +290,11 @@ async def predict(request: PredictionRequest):
         
         # 2. Prediction
         probability = model.predict_proba(features)[0, 1]
-        prediction = int(probability >= 0.5)  # Threshold 0.5
+        
+        # Get threshold from config (default 0.5)
+        # This allows K8s ConfigMap to control sensitivity
+        threshold = float(os.getenv("DECISION_THRESHOLD", 0.5))
+        prediction = int(probability >= threshold)
         
         # 3. Post-processing (New Risk Assessment with Cost)
         assessment = get_risk_assessment(probability)
