@@ -149,6 +149,10 @@ jobs:
     
     - name: Generate synthetic data (fallback)
       run: |
+        # Create data directories if they don't exist
+        mkdir -p data/raw
+        mkdir -p data/processed
+        
         # Generate data if not present
         if [ ! -f "data/raw/clinical_trials_realistic_v5.csv" ]; then
           echo "Generating synthetic data..."
