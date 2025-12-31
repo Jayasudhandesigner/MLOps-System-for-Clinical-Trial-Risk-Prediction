@@ -170,6 +170,8 @@ jobs:
         path: |
           mlflow.db
           mlruns/
+          models/
+          data/processed/
         retention-days: 7
 
   # ============================================================

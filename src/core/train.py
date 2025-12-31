@@ -203,6 +203,16 @@ def train_model(
             registered_model_name=f"ClinicalTrialDropout_{target}_{feature_version}"
         )
         
+        # Save model locally for API use
+        import joblib
+        models_dir = Path("models")
+        models_dir.mkdir(parents=True, exist_ok=True)
+        
+        model_filename = f"{model_type}_fixed.pkl"
+        model_path = models_dir / model_filename
+        joblib.dump(model, model_path)
+        logger.info(f"💾 Model saved to {model_path}")
+        
         logger.info(f"✅ Model trained")
         logger.info(f"   CV ROC-AUC:   {metrics['cv_roc_auc']:.3f} ± {metrics['cv_roc_auc_std']:.3f}")
         logger.info(f"   Test ROC-AUC: {metrics['test_roc_auc']:.3f}")
