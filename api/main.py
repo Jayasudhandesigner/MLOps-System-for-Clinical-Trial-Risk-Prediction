@@ -241,8 +241,24 @@ async def predict(request: PredictionRequest):
         action = assessment["action"]
         cost = assessment["cost"]
         
-        # 4. Log
+        # 4. Log for internal tracing
         logger.info(f"Prediction: {prediction} (Prob: {probability:.3f}) - {risk_level} (${cost})")
+        
+        # 5. Log for monitoring/drift detection (Day 15)
+        try:
+            from monitoring.prediction_monitor import log_prediction
+            log_prediction(
+                input_data=request.dict(),
+                output_data={
+                    "dropout_prediction": prediction,
+                    "dropout_probability": round(probability, 4),
+                    "risk_level": risk_level,
+                    "recommended_action": action,
+                    "intervention_cost": cost
+                }
+            )
+        except Exception as log_error:
+            logger.warning(f"Monitoring log failed: {log_error}")
         
         return {
             "patient_id": request.patient_id,
@@ -256,3 +272,4 @@ async def predict(request: PredictionRequest):
     except Exception as e:
         logger.error(f"Prediction error: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
+

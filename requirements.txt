@@ -23,3 +23,6 @@ pydantic>=2.5.0           # Data validation
 # Development and testing
 pytest>=7.4.0
 requests>=2.31.0           # For API testing
+
+# Monitoring and Drift Detection (Day 15)
+evidently>=0.4.0           # ML monitoring and drift detection
