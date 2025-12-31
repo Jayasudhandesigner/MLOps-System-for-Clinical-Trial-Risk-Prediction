@@ -106,7 +106,13 @@ class PredictionResponse(BaseModel):
 def engineer_features(input_data: Dict[str, Any]) -> pd.DataFrame:
     """
     Transform raw input into model features.
-    Matches logic in force_train_save.py
+    MUST MATCH: src/core/features.py + src/core/preprocess.py (v3_causal)
+    
+    Features (in order):
+    - age, days_in_trial (numeric base)
+    - visit_rate, adverse_event_rate, time_since_last_visit (rates)
+    - burden, age_adverse_risk (interactions)
+    - trial_phase_risk, treatment_risk (domain)
     """
     # Extract base features
     age = input_data['age']
@@ -117,31 +123,45 @@ def engineer_features(input_data: Dict[str, Any]) -> pd.DataFrame:
     treatment_group = input_data['treatment_group']
     trial_phase = input_data['trial_phase']
     
-    # 1. Visit Compliance
-    expected_visits = days_in_trial / 30
-    visit_compliance = visits_completed / (expected_visits + 0.1)
+    # === RATE FEATURES (from src/core/features.py) ===
+    # Visit rate: compliance measure
+    expected_visits = days_in_trial / 30 + 1
+    visit_rate = visits_completed / expected_visits
     
-    # 2. Time since last visit
+    # Adverse event rate: normalized by time
+    adverse_event_rate = adverse_events / (days_in_trial + 1)
+    
+    # Time since last visit: engagement gap
     time_since_last_visit = days_in_trial - last_visit_day
     
-    # 3. Adverse Rate
-    adverse_rate = adverse_events / (days_in_trial + 1)
+    # === INTERACTION FEATURES ===
+    # Burden: compound pressure from adverse events + poor compliance
+    burden = adverse_event_rate * (1 - visit_rate)
     
-    # 4. Encodings
-    phase_map = {'Phase I': 1, 'Phase II': 2, 'Phase III': 3}
-    treatment_map = {'Active': 1, 'Control': 2, 'Placebo': 3}
+    # Age-adverse risk: older patients tolerate adverse events less
+    age_adverse_risk = (age / 85) * adverse_event_rate
     
-    # Create DataFrame with EXACT feature order from training
+    # === DOMAIN FEATURES ===
+    # Trial phase risk (ordinal)
+    trial_phase_risk_map = {'Phase I': 0.2, 'Phase II': 0.5, 'Phase III': 0.8}
+    trial_phase_risk = trial_phase_risk_map.get(trial_phase, 0.5)
+    
+    # Treatment group risk (ordinal)
+    treatment_risk_map = {'Active': 0.1, 'Control': 0.3, 'Placebo': 0.4}
+    treatment_risk = treatment_risk_map.get(treatment_group, 0.3)
+    
+    # Create DataFrame with EXACT feature order from preprocess.py
+    # Order: NUMERIC_FEATURES + RATE_FEATURES + INTERACTION_FEATURES + DOMAIN_FEATURES
     features = pd.DataFrame([{
         'age': age,
         'days_in_trial': days_in_trial,
-        'visits_completed': visits_completed,
-        'visit_compliance': visit_compliance,
+        'visit_rate': visit_rate,
+        'adverse_event_rate': adverse_event_rate,
         'time_since_last_visit': time_since_last_visit,
-        'adverse_events': adverse_events,
-        'adverse_rate': adverse_rate,
-        'trial_phase_encoded': phase_map.get(trial_phase, 0),
-        'treatment_encoded': treatment_map.get(treatment_group, 0)
+        'burden': burden,
+        'age_adverse_risk': age_adverse_risk,
+        'trial_phase_risk': trial_phase_risk,
+        'treatment_risk': treatment_risk
     }])
     
     return features
