@@ -1,0 +1,73 @@
+{
+  "dataset_drift": true,
+  "drift_share": 0.7272727272727273,
+  "drifted_count": 8,
+  "total_features": 11,
+  "drifted_features": [
+    "risk_level",
+    "last_visit_day",
+    "trial_phase",
+    "days_in_trial",
+    "dropout_probability",
+    "visits_completed",
+    "treatment_group",
+    "adverse_events"
+  ],
+  "feature_details": {
+    "gender": {
+      "drift_detected": "False",
+      "p_value": 0.1802462247599112,
+      "test": "Chi2-test"
+    },
+    "risk_level": {
+      "drift_detected": "True",
+      "p_value": 0.0,
+      "test": "Chi2-test"
+    },
+    "last_visit_day": {
+      "drift_detected": "True",
+      "p_value": 0.0024302933679978917,
+      "test": "KS-test"
+    },
+    "trial_phase": {
+      "drift_detected": "True",
+      "p_value": 0.009636031901900231,
+      "test": "Chi2-test"
+    },
+    "age": {
+      "drift_detected": "False",
+      "p_value": 0.9147728257665337,
+      "test": "KS-test"
+    },
+    "days_in_trial": {
+      "drift_detected": "True",
+      "p_value": 0.00995446563156765,
+      "test": "KS-test"
+    },
+    "dropout_probability": {
+      "drift_detected": "True",
+      "p_value": 6.188022498481719e-05,
+      "test": "KS-test"
+    },
+    "dropout_prediction": {
+      "drift_detected": "False",
+      "p_value": 0.6474690029891204,
+      "test": "KS-test"
+    },
+    "visits_completed": {
+      "drift_detected": "True",
+      "p_value": 1.6556323107736025e-13,
+      "test": "KS-test"
+    },
+    "treatment_group": {
+      "drift_detected": "True",
+      "p_value": 0.0012579359022464034,
+      "test": "Chi2-test"
+    },
+    "adverse_events": {
+      "drift_detected": "True",
+      "p_value": 0.00010338531765894533,
+      "test": "KS-test"
+    }
+  }
+}
