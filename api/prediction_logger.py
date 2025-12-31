@@ -125,7 +125,7 @@ class PredictionLogger:
             "decision_threshold": self.decision_threshold,
             
             # Input
-            "patient_id": patient_id,
+            "patient_hash": hashlib.sha256(str(patient_id).encode()).hexdigest(),  # Anonymized
             "input_hash": self._hash_input(input_data),
             
             # Output

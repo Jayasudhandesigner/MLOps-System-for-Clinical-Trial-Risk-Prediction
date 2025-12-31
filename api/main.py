@@ -10,7 +10,8 @@ Serves XGBoost model (Fixed Version) with:
 - Clean user-facing responses
 """
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Depends, Header
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field, validator
 from typing import Literal, Dict, Any
 import joblib
@@ -18,6 +19,7 @@ import pandas as pd
 import numpy as np
 import time
 import logging
+import os
 from pathlib import Path
 
 from api.prediction_logger import init_logger, get_logger
@@ -36,6 +38,37 @@ app = FastAPI(
     description="Predict patient dropout risk in clinical trials using XGBoost",
     version="1.1.0"
 )
+
+# ============================================================================
+# SECURITY LAYER
+# ============================================================================
+
+# 1. CORS (Cross-Origin Resource Sharing)
+# Allow React app to talk to API
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # In real PROD, replace with specific React app domain
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# 2. API Key Authentication
+API_KEY_NAME = "x-api-key"
+# Get key from env (Kubernetes Secret)
+API_KEY_VALUE = os.getenv("API_KEY", "dev-secret-key")
+
+if API_KEY_VALUE == "dev-secret-key":
+    logger.warning("⚠️  Using INSECURE default API key. Set API_KEY env var in production!")
+
+async def verify_api_key(x_api_key: str = Header(..., alias=API_KEY_NAME)):
+    """Enforce API Key authentication on protected endpoints."""
+    if x_api_key != API_KEY_VALUE:
+        raise HTTPException(
+            status_code=401,
+            detail="Invalid or missing API Key"
+        )
+    return x_api_key
 
 # Global model
 model = None
@@ -272,7 +305,7 @@ async def health_check():
     }
 
 
-@app.post("/predict", response_model=PredictionResponse)
+@app.post("/predict", response_model=PredictionResponse, dependencies=[Depends(verify_api_key)])
 async def predict(request: PredictionRequest):
     start_time = time.time()
     
