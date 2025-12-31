@@ -72,3 +72,5 @@ NOTES.md
 .env
 *.env
 !.env.example
+
+notebooks/
