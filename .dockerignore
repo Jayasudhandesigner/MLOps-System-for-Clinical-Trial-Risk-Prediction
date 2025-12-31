@@ -62,10 +62,8 @@ scripts/
 logs/
 *.log
 
-# Models (loaded from MLflow)
-models/
-*.pkl
-!data/processed/preprocessor_dropout_v3_causal.pkl
+# Models - INCLUDE in build (needed for API)
+# Don't exclude models/ - we need production_model.pkl in the image
 
 # OS
 .DS_Store

@@ -200,19 +200,24 @@ def get_risk_assessment(probability: float) -> Dict[str, Any]:
 # API ENDPOINTS
 # ============================================================================
 
+# Environment-based model path
+import os
+MODEL_PATH = os.getenv("MODEL_PATH", "models/production_model.pkl")
+
 @app.on_event("startup")
 async def startup_event():
-    """Load model and initialize logging on startup"""
+    """Load model and initialize logging on startup (resilient)"""
     global model
     
     logger.info("🚀 Starting API server...")
     
-    # Try multiple model paths in order of preference
+    # Try environment variable path first, then fallbacks
     model_paths = [
-        Path("models/production_model.pkl"),   # Production (Logistic Regression)
-        Path("models/logistic_fixed.pkl"),     # Logistic fallback
-        Path("models/xgboost_fixed.pkl"),      # XGBoost fallback
-        Path("models/lightgbm_fixed.pkl"),     # LightGBM fallback
+        Path(MODEL_PATH),                          # From environment
+        Path("models/production_model.pkl"),       # Production (Logistic)
+        Path("models/logistic_fixed.pkl"),         # Logistic fallback
+        Path("models/xgboost_fixed.pkl"),          # XGBoost fallback
+        Path("models/lightgbm_fixed.pkl"),         # LightGBM fallback
     ]
     
     model_loaded = False
@@ -227,33 +232,43 @@ async def startup_event():
                 logger.warning(f"Failed to load {model_path}: {e}")
     
     if not model_loaded:
-        logger.error(f"❌ No model found. Tried: {[str(p) for p in model_paths]}")
-        raise RuntimeError("Model file missing")
+        logger.error(f"⚠️ No model found. API started without model.")
+        logger.error(f"   Tried: {[str(p) for p in model_paths]}")
+        logger.error(f"   /predict will return 503 until model is available")
+        # DON'T raise - let API start for health checks
     
-    # Initialize logger
-    init_logger(
-        model_version="v_fixed",
-        model_stage="production",
-        decision_threshold=0.5,
-        log_file="logs/predictions.log"
-    )
-    logger.info("✅ Prediction logger initialized")
+    # Initialize prediction logger
+    try:
+        init_logger(
+            model_version="v_fixed",
+            model_stage="production",
+            decision_threshold=0.5,
+            log_file="logs/predictions.log"
+        )
+        logger.info("✅ Prediction logger initialized")
+    except Exception as e:
+        logger.warning(f"Prediction logger failed: {e}")
+    
+    logger.info("✅ API startup complete")
 
 
 @app.get("/")
 async def root():
     return {
-        "message": "Clinical Trial Dropout Prediction API (Fixed Version)",
-        "version": "1.1.0",
-        "status": "healthy"
+        "message": "Clinical Trial Dropout Prediction API",
+        "version": "2.0.0",
+        "status": "healthy",
+        "model_loaded": model is not None
     }
 
 
 @app.get("/health")
 async def health_check():
+    """Health check - always returns 200 (independent of model)"""
     return {
         "status": "healthy",
-        "model_loaded": model is not None
+        "model_loaded": model is not None,
+        "model_path": MODEL_PATH
     }
 
 
@@ -261,11 +276,19 @@ async def health_check():
 async def predict(request: PredictionRequest):
     start_time = time.time()
     
+    # Check if model is available
+    if model is None:
+        from fastapi import HTTPException
+        raise HTTPException(
+            status_code=503,
+            detail="Model not available. Service is starting up or model failed to load."
+        )
+    
     try:
         # 1. Feature engineering
         features = engineer_features(request.dict())
         
-        # 2. Prediction (No scaler needed for this tree model)
+        # 2. Prediction
         probability = model.predict_proba(features)[0, 1]
         prediction = int(probability >= 0.5)  # Threshold 0.5
         

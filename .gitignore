@@ -26,10 +26,12 @@ data/processed/*
 !*.dvc
 !**/*.dvc
 
-# ===== Models (NEVER COMMIT) =====
-models/
-*.pkl
-*.joblib
+# ===== Models =====
+# Large model files tracked via DVC, but production model allowed for CI/CD
+models/*.pkl
+!models/production_model.pkl
+!models/logistic_fixed.pkl
+!models/.gitkeep
 
 # ===== Artifacts & Logs =====
 *.log
