@@ -290,6 +290,23 @@ jobs:
       with:
         name: mlflow-artifacts
     
+    - name: Prepare Docker build context
+      run: |
+        echo "=== Preparing Docker build context ==="
+        # Ensure directories exist
+        mkdir -p models data/processed monitoring
+        
+        # List what we have
+        echo "=== Directory structure ==="
+        ls -la
+        ls -la models/ || echo "models/ empty"
+        ls -la data/processed/ || echo "data/processed/ empty"
+        
+        # Create placeholder if models is empty (for Docker build to succeed)
+        if [ ! -f models/*.pkl ] 2>/dev/null; then
+          echo "No model files found - Docker will need model files mounted at runtime"
+        fi
+    
     - name: Build Docker image
       run: |
         docker build -t clinical-trial-mlops:${{ github.sha }} .

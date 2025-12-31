@@ -4,7 +4,7 @@
 # Multi-stage build for optimized production image
 
 # Stage 1: Builder
-FROM python:3.10-slim as builder
+FROM python:3.10-slim AS builder
 
 WORKDIR /build
 
@@ -39,22 +39,27 @@ COPY --from=builder /root/.local /home/appuser/.local
 # Set PATH for user-installed packages
 ENV PATH=/home/appuser/.local/bin:$PATH
 
-# Copy application code
+# Create necessary directories
+RUN mkdir -p /app/api /app/src /app/monitoring /app/models /app/data/processed /app/logs
+
+# Copy application code (required)
 COPY api/ /app/api/
 COPY src/ /app/src/
-COPY monitoring/ /app/monitoring/
 
-# Copy model files (from artifacts or local)
-COPY models/ /app/models/
+# Copy everything else that might exist - using ADD with wildcards
+# Note: If these don't exist, the build will fail. Use CI to ensure they exist.
+COPY . /tmp/context/
 
-# Copy data artifacts (optional - may not exist in all environments)
-COPY data/processed/ /app/data/processed/
+# Copy optional files if they exist using shell
+RUN cp -r /tmp/context/monitoring/*.py /app/monitoring/ 2>/dev/null || mkdir -p /app/monitoring && \
+    cp /tmp/context/models/*.pkl /app/models/ 2>/dev/null || echo "No models to copy" && \
+    cp /tmp/context/data/processed/*.pkl /app/data/processed/ 2>/dev/null || echo "No preprocessors to copy" && \
+    cp /tmp/context/data/processed/*.csv /app/data/processed/ 2>/dev/null || echo "No processed data to copy" && \
+    cp /tmp/context/mlflow.db /app/ 2>/dev/null || echo "No mlflow.db to copy" && \
+    rm -rf /tmp/context
 
-# Copy MLflow database (optional)
-COPY mlflow.db* /app/
-
-# Create logs directory with proper permissions
-RUN mkdir -p /app/logs /app/monitoring && chown -R appuser:appuser /app
+# Set ownership
+RUN chown -R appuser:appuser /app
 
 # Switch to non-root user
 USER appuser
@@ -71,7 +76,7 @@ ENV MODEL_VERSION=v3_causal \
 # Expose port
 EXPOSE 8000
 
-# Health check (increased start period)
+# Health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
     CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')" || exit 1
 
