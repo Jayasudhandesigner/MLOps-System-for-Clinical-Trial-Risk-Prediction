@@ -208,10 +208,16 @@ def train_model(
         models_dir = Path("models")
         models_dir.mkdir(parents=True, exist_ok=True)
         
+        # Save with model type name
         model_filename = f"{model_type}_fixed.pkl"
         model_path = models_dir / model_filename
         joblib.dump(model, model_path)
         logger.info(f"💾 Model saved to {model_path}")
+        
+        # Also save as production_model.pkl (standard name for API)
+        production_path = models_dir / "production_model.pkl"
+        joblib.dump(model, production_path)
+        logger.info(f"💾 Production model saved to {production_path}")
         
         logger.info(f"✅ Model trained")
         logger.info(f"   CV ROC-AUC:   {metrics['cv_roc_auc']:.3f} ± {metrics['cv_roc_auc_std']:.3f}")

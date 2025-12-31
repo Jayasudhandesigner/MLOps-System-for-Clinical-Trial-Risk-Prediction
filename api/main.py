@@ -207,13 +207,27 @@ async def startup_event():
     
     logger.info("🚀 Starting API server...")
     
-    # Load FIXED model
-    model_path = Path("models/xgboost_fixed.pkl")
-    if model_path.exists():
-        model = joblib.load(model_path)
-        logger.info(f"✅ Loaded FIXED model from file: {model_path}")
-    else:
-        logger.error(f"❌ Model not found at {model_path}")
+    # Try multiple model paths in order of preference
+    model_paths = [
+        Path("models/production_model.pkl"),   # Production (Logistic Regression)
+        Path("models/logistic_fixed.pkl"),     # Logistic fallback
+        Path("models/xgboost_fixed.pkl"),      # XGBoost fallback
+        Path("models/lightgbm_fixed.pkl"),     # LightGBM fallback
+    ]
+    
+    model_loaded = False
+    for model_path in model_paths:
+        if model_path.exists():
+            try:
+                model = joblib.load(model_path)
+                logger.info(f"✅ Loaded model from: {model_path}")
+                model_loaded = True
+                break
+            except Exception as e:
+                logger.warning(f"Failed to load {model_path}: {e}")
+    
+    if not model_loaded:
+        logger.error(f"❌ No model found. Tried: {[str(p) for p in model_paths]}")
         raise RuntimeError("Model file missing")
     
     # Initialize logger
