@@ -1,0 +1,46 @@
+# =============================================================================
+# RETRAINING POLICY - Clinical Trial Dropout Prediction
+# =============================================================================
+# This file defines WHEN the system should trigger automatic retraining.
+# Philosophy: Retrain on signal, not noise.
+
+retraining_triggers:
+  # ─────────────────────────────────────────────────────────────────────────
+  # DATA DRIFT: Features have shifted from training distribution
+  # ─────────────────────────────────────────────────────────────────────────
+  data_drift:
+    max_drifted_features_pct: 0.30  # Retrain if >30% features drifted
+    
+  # ─────────────────────────────────────────────────────────────────────────
+  # PREDICTION DRIFT: Model outputs have shifted
+  # ─────────────────────────────────────────────────────────────────────────
+  prediction_drift:
+    max_distribution_shift: 0.20    # Retrain if prediction distribution shifted >20%
+    
+  # ─────────────────────────────────────────────────────────────────────────
+  # PERFORMANCE DECAY: Model accuracy has degraded
+  # ─────────────────────────────────────────────────────────────────────────
+  performance:
+    min_recall: 0.55                # Retrain if recall drops below 55%
+    min_roc_auc: 0.58               # Retrain if ROC-AUC drops below 58%
+
+# ─────────────────────────────────────────────────────────────────────────────
+# COOLDOWN: Minimum days between retraining cycles
+# ─────────────────────────────────────────────────────────────────────────────
+cooldown_days: 7
+
+# ─────────────────────────────────────────────────────────────────────────────
+# PROMOTION GATES: Requirements for new model to replace production
+# ─────────────────────────────────────────────────────────────────────────────
+promotion_gates:
+  min_improvement_pct: 0.02         # Candidate must be ≥2% better than production
+  require_ci_pass: true             # Must pass all CI quality gates
+  require_comparison: true          # Must compare against production model
+
+# ─────────────────────────────────────────────────────────────────────────────
+# AUDIT: Logging configuration
+# ─────────────────────────────────────────────────────────────────────────────
+audit:
+  log_file: "logs/retraining_audit.jsonl"
+  log_decisions: true
+  log_promotions: true

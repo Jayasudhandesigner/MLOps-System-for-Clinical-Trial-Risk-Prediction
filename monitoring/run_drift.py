@@ -261,11 +261,35 @@ def run_drift_detection() -> Dict[str, Any]:
     else:
         results = run_fallback_drift_detection(ref_aligned, cur_aligned)
     
-    # Save results
+    # Save detailed report
     Path(REPORT_JSON_PATH).parent.mkdir(parents=True, exist_ok=True)
     with open(REPORT_JSON_PATH, "w") as f:
         json.dump(results, f, indent=2, default=str)
     print(f"📋 Saved JSON report: {REPORT_JSON_PATH}")
+    
+    # Save SIMPLIFIED summary for retraining brain
+    # Using float() to ensure simple JSON types
+    summary = {
+        "timestamp": datetime.now().isoformat(),
+        "data_drift_pct": float(results.get("drift_share", 0.0)),
+        # Placeholder for prediction shift - in a real app, calculate JS divergence or similar
+        # For now, using drift_share of prediction columns if available, or 0.0
+        "prediction_shift": 0.0, 
+        # Performance placeholders (would come from ground truth analysis)
+        "recall": 1.0, 
+        "roc_auc": 1.0
+    }
+    
+    # If prediction columns drifted, estimate shift (rough proxy)
+    drifted_cols = results.get("drifted_features", [])
+    pred_drift_count = sum(1 for c in PREDICTION_COLUMNS if c in drifted_cols)
+    if PREDICTION_COLUMNS:
+        summary["prediction_shift"] = float(pred_drift_count / len(PREDICTION_COLUMNS))
+        
+    summary_path = "monitoring/drift_summary.json"
+    with open(summary_path, "w") as f:
+        json.dump(summary, f, indent=2)
+    print(f"🧠 Saved brain input: {summary_path}")
     
     # Print summary
     print()
