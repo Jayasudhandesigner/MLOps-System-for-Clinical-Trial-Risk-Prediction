@@ -254,10 +254,20 @@ jobs:
         # Health check
         curl -f http://localhost:8000/health || exit 1
         
-        # Prediction test
+        # Prediction test (all required fields)
         curl -f -X POST http://localhost:8000/predict \
           -H "Content-Type: application/json" \
-          -d '{"age": 55, "days_in_trial": 90, "visits_completed": 3, "adverse_events": 2, "trial_phase": "Phase II", "treatment_group": "Active", "gender": "Male"}' \
+          -d '{
+            "patient_id": "TEST-001",
+            "age": 55,
+            "gender": "Male",
+            "treatment_group": "Active",
+            "trial_phase": "Phase II",
+            "days_in_trial": 90,
+            "visits_completed": 3,
+            "last_visit_day": 80,
+            "adverse_events": 2
+          }' \
           || exit 1
         
         echo "✅ API integration tests passed"
