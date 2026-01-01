@@ -1,0 +1,97 @@
+﻿{
+    "test_results":  [
+                         {
+                             "input":  {
+                                           "visits_completed":  2,
+                                           "trial_phase":  "Phase III",
+                                           "treatment_group":  "Placebo",
+                                           "last_visit_day":  90,
+                                           "patient_id":  "CRIT-001",
+                                           "gender":  "Male",
+                                           "days_in_trial":  180,
+                                           "age":  75,
+                                           "adverse_events":  8
+                                       },
+                             "test_name":  "CRITICAL RISK - Elderly patient with poor compliance",
+                             "output":  {
+                                            "patient_id":  "CRIT-001",
+                                            "dropout_prediction":  1,
+                                            "dropout_probability":  0.9935,
+                                            "risk_level":  "Critical",
+                                            "recommended_action":  "retention_team_deployment",
+                                            "intervention_cost":  500.0
+                                        }
+                         },
+                         {
+                             "input":  {
+                                           "visits_completed":  3,
+                                           "trial_phase":  "Phase I",
+                                           "treatment_group":  "Active",
+                                           "last_visit_day":  28,
+                                           "patient_id":  "LOW-001",
+                                           "gender":  "Female",
+                                           "days_in_trial":  30,
+                                           "age":  35,
+                                           "adverse_events":  0
+                                       },
+                             "test_name":  "LOW RISK - Young healthy patient with good compliance",
+                             "output":  {
+                                            "patient_id":  "LOW-001",
+                                            "dropout_prediction":  0,
+                                            "dropout_probability":  0.0012,
+                                            "risk_level":  "Low",
+                                            "recommended_action":  "automated_sms_alert",
+                                            "intervention_cost":  0.5
+                                        }
+                         },
+                         {
+                             "input":  {
+                                           "visits_completed":  4,
+                                           "trial_phase":  "Phase II",
+                                           "treatment_group":  "Control",
+                                           "last_visit_day":  75,
+                                           "patient_id":  "MED-001",
+                                           "gender":  "Non-binary",
+                                           "days_in_trial":  90,
+                                           "age":  55,
+                                           "adverse_events":  3
+                                       },
+                             "test_name":  "MEDIUM RISK - Middle-aged patient in control group",
+                             "output":  {
+                                            "patient_id":  "MED-001",
+                                            "dropout_prediction":  0,
+                                            "dropout_probability":  0.1271,
+                                            "risk_level":  "Low",
+                                            "recommended_action":  "automated_sms_alert",
+                                            "intervention_cost":  0.5
+                                        }
+                         },
+                         {
+                             "input":  {
+                                           "visits_completed":  3,
+                                           "trial_phase":  "Phase III",
+                                           "treatment_group":  "Placebo",
+                                           "last_visit_day":  120,
+                                           "patient_id":  "HIGH-001",
+                                           "gender":  "Female",
+                                           "days_in_trial":  200,
+                                           "age":  68,
+                                           "adverse_events":  12
+                                       },
+                             "test_name":  "HIGH RISK - Patient with many adverse events",
+                             "output":  {
+                                            "patient_id":  "HIGH-001",
+                                            "dropout_prediction":  1,
+                                            "dropout_probability":  0.9874,
+                                            "risk_level":  "Critical",
+                                            "recommended_action":  "retention_team_deployment",
+                                            "intervention_cost":  500.0
+                                        }
+                         }
+                     ],
+    "health_check":  {
+                         "status":  "healthy",
+                         "model_loaded":  true,
+                         "model_path":  "models/production_model.pkl"
+                     }
+}

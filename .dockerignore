@@ -52,7 +52,7 @@ htmlcov/
 
 # Research branch files
 src/experiments/
-scripts/
+# scripts/ - NEEDED for model training during build
 
 # Notebooks
 *.ipynb
