@@ -271,7 +271,7 @@ This system enables pharmaceutical companies to:
 </p>
 
 **👤 Jayasudhan M** | ML Engineer & MLOps Specialist  
-**📍 Location:** Open to opportunities in Dubai, UAE 🇦🇪
+**📍 Location:** Open to opportunities in Dubai, UAE 🇦🇪 and Europe.
 
 ---
 
@@ -280,11 +280,3 @@ This system enables pharmaceutical companies to:
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ---
-
-<p align="center">
-  <strong>⭐ Star this repository if you find it helpful!</strong>
-</p>
-
-<p align="center">
-  Made with ❤️ for Healthcare AI
-</p>
