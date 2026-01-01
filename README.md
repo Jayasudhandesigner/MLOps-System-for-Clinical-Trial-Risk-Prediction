@@ -266,11 +266,12 @@ This system enables pharmaceutical companies to:
 ## 📬 Contact
 
 <p align="center">
-  <a href="https://www.linkedin.com/in/YOUR-LINKEDIN-PROFILE"><img src="https://img.shields.io/badge/LinkedIn-Connect-blue?style=for-the-badge&logo=linkedin" alt="LinkedIn"/></a>
-  <a href="mailto:your.email@example.com"><img src="https://img.shields.io/badge/Email-Contact-red?style=for-the-badge&logo=gmail" alt="Email"/></a>
+  <a href="https://www.linkedin.com/in/jayasudhan-m-a0b9b2244/"><img src="https://img.shields.io/badge/LinkedIn-Jayasudhan_M-blue?style=for-the-badge&logo=linkedin" alt="LinkedIn"/></a>
+  <a href="mailto:jayasudhanmuneeswaran@gmail.com"><img src="https://img.shields.io/badge/Email-Contact_Me-red?style=for-the-badge&logo=gmail" alt="Email"/></a>
 </p>
 
-**Location:** Open to opportunities in Dubai, UAE 🇦🇪
+**👤 Jayasudhan M** | ML Engineer & MLOps Specialist  
+**📍 Location:** Open to opportunities in Dubai, UAE 🇦🇪
 
 ---
 
