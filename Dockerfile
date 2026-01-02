@@ -30,7 +30,7 @@ FROM python:3.10-slim
 
 # Metadata
 LABEL maintainer="Clinical Trial ML Team"
-LABEL version="2.2.0-optimized"
+LABEL version="2.3.0-risk-consistency"
 LABEL description="FastAPI service for clinical trial dropout prediction (AWS Free Tier)"
 
 # Create non-root user for security
@@ -52,7 +52,7 @@ ENV PATH=/home/appuser/.local/bin:$PATH
 RUN mkdir -p /app/logs /app/monitoring
 
 # Copy application code (only what's needed)
-COPY api/__init__.py api/config.py api/main.py api/prediction_logger.py /app/api/
+COPY api/__init__.py api/config.py api/main.py api/prediction_logger.py api/risk_bands.py /app/api/
 
 # Copy monitoring module (minimal)
 COPY monitoring/__init__.py monitoring/prediction_monitor.py /app/monitoring/
